@@ -24,6 +24,12 @@ dependencies:
     path: ../copilot_sdk  # or git/pub reference
 ```
 
+## Documentation
+
+- [Getting started](docs/getting-started.md)
+- [API reference](docs/api.md)
+- [MCP servers](docs/mcp.md)
+
 ## Quick Start
 
 ```dart
@@ -197,6 +203,17 @@ final client = await CopilotClient.create(
 
 ```sh
 dart test
+```
+
+## Protocol Version
+
+The SDK protocol version is defined in `sdk-protocol-version.json` and
+generated into `lib/src/copilot/protocol_version.dart`.
+
+Update it by running:
+
+```sh
+dart run tool/update_protocol_version.dart
 ```
 
 ## Related Projects

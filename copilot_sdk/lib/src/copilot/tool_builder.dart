@@ -31,7 +31,8 @@ class SchemaBuilder {
     return SchemaProperty.object(
       properties: properties,
       description: description,
-      required: required ??
+      required:
+          required ??
           properties.entries
               .where((e) => e.value.isRequired)
               .map((e) => e.key)
@@ -160,7 +161,7 @@ class SchemaBuilder {
 
 /// Represents a schema property for tool parameters.
 class SchemaProperty {
-
+  /// Creates an object schema property.
   factory SchemaProperty.object({
     required Map<String, SchemaProperty> properties,
     String? description,
@@ -174,6 +175,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates a string schema property.
   factory SchemaProperty.string({
     String? description,
     List<String>? enumValues,
@@ -195,6 +197,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates an integer schema property.
   factory SchemaProperty.integer({
     String? description,
     int? minimum,
@@ -212,6 +215,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates a number schema property.
   factory SchemaProperty.number({
     String? description,
     double? minimum,
@@ -229,6 +233,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates a boolean schema property.
   factory SchemaProperty.boolean({
     String? description,
     bool? defaultValue,
@@ -242,6 +247,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates an array schema property.
   factory SchemaProperty.array({
     required SchemaProperty items,
     String? description,
@@ -259,6 +265,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates a union schema property.
   factory SchemaProperty.union({
     required List<SchemaProperty> types,
     String? description,
@@ -272,6 +279,7 @@ class SchemaProperty {
     );
   }
 
+  /// Creates an untyped schema property.
   factory SchemaProperty.any({
     String? description,
     bool required = false,
@@ -282,6 +290,8 @@ class SchemaProperty {
       required: required,
     );
   }
+
+  /// Creates a schema property instance.
   const SchemaProperty._({
     required this.type,
     this.description,
@@ -299,23 +309,52 @@ class SchemaProperty {
     this.anyOf,
   });
 
+  /// JSON schema type.
   final String type;
+
+  /// Optional description for documentation.
   final String? description;
+
+  /// Whether the property is required.
   final bool required;
+
+  /// Whether the property accepts null.
   final bool nullable;
+
+  /// Object properties if this is an object schema.
   final Map<String, SchemaProperty>? properties;
+
+  /// Array item schema if this is an array.
   final SchemaProperty? items;
+
+  /// Enumeration values if provided.
   final List<dynamic>? enumValues;
+
+  /// Optional regex pattern for string values.
   final String? pattern;
+
+  /// Minimum length for string values.
   final int? minLength;
+
+  /// Maximum length for string values.
   final int? maxLength;
+
+  /// Minimum numeric value.
   final num? minimum;
+
+  /// Maximum numeric value.
   final num? maximum;
+
+  /// Default value for the property.
   final dynamic defaultValue;
+
+  /// Union type options.
   final List<SchemaProperty>? anyOf;
 
+  /// Whether the property is required.
   bool get isRequired => required;
 
+  /// Creates a copy with updated values.
   SchemaProperty copyWith({
     String? type,
     String? description,
@@ -350,6 +389,7 @@ class SchemaProperty {
     );
   }
 
+  /// Serializes the schema property to JSON.
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{
       'type': type,
@@ -447,7 +487,9 @@ class SchemaProperty {
 /// ```
 ToolDefinition defineTool(
   String name, {
-  required Map<String, SchemaProperty> Function(SchemaBuilder s) parameters, required ToolHandler handler, String? description,
+  required Map<String, SchemaProperty> Function(SchemaBuilder s) parameters,
+  required ToolHandler handler,
+  String? description,
 }) {
   final builder = SchemaBuilder();
   final params = parameters(builder);
@@ -493,7 +535,8 @@ ToolDefinition defineTool(
 /// ```
 ToolDefinition defineSimpleTool(
   String name, {
-  required ToolHandler handler, String? description,
+  required ToolHandler handler,
+  String? description,
 }) {
   return ToolDefinition(
     name: name,

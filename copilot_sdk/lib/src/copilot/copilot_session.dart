@@ -276,7 +276,7 @@ class CopilotSession {
       'prompt': message,
       if (attachments != null && attachments.isNotEmpty)
         'attachments': attachments.map((a) => a.toJson()).toList(),
-      if (mode != null) 'mode': mode,
+      'mode': ?mode,
     };
 
     final result = await _rpcClient.sendRequest('session.send', params);

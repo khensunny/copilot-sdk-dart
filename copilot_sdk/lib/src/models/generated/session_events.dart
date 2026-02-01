@@ -1117,7 +1117,7 @@ class SessionError extends SessionEvent {
 class SessionIdleData {
   const SessionIdleData();
 
-  factory SessionIdleData.fromJson(Map<String, dynamic> json) {
+  factory SessionIdleData.fromJson(Map<String, dynamic> _) {
     return const SessionIdleData();
   }
 

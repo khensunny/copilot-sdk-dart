@@ -5,12 +5,10 @@ import 'dart:io';
 import 'package:copilot_sdk/src/copilot/copilot_config.dart';
 import 'package:copilot_sdk/src/copilot/copilot_session.dart';
 import 'package:copilot_sdk/src/copilot/copilot_types.dart';
+import 'package:copilot_sdk/src/copilot/protocol_version.dart';
 import 'package:copilot_sdk/src/jsonrpc/jsonrpc.dart';
 import 'package:copilot_sdk/src/models/generated/session_events.dart';
 import 'package:copilot_sdk/src/transports/transports.dart';
-
-/// SDK protocol version for compatibility checking.
-const int sdkProtocolVersion = 2;
 
 /// Main client for interacting with the Copilot CLI.
 ///
@@ -222,7 +220,8 @@ class CopilotClient {
   Future<void> _spawnProcess() async {
     // Use COPILOT_CLI_PATH environment variable if available,
     // otherwise use config or default
-    final cliPath = _config.cliPath ??
+    final cliPath =
+        _config.cliPath ??
         Platform.environment['COPILOT_CLI_PATH'] ??
         'copilot';
     final command = _resolveCliCommand(cliPath);
@@ -277,7 +276,8 @@ class CopilotClient {
   Future<void> _spawnTcpProcess() async {
     // Use COPILOT_CLI_PATH environment variable if available,
     // otherwise use config or default
-    final cliPath = _config.cliPath ??
+    final cliPath =
+        _config.cliPath ??
         Platform.environment['COPILOT_CLI_PATH'] ??
         'copilot';
     final command = _resolveCliCommand(cliPath);
@@ -320,32 +320,35 @@ class CopilotClient {
     final portCompleter = Completer<int>();
     final startupTimeout = _config.timeout;
 
-    _process!.stderr.transform(utf8.decoder).listen(
-      (data) {
-        if (data.isNotEmpty) {
-          // In debug mode, print stderr output
-          if (!const bool.fromEnvironment('dart.vm.product')) {
-            // ignore: avoid_print
-            print('[Copilot CLI stderr] $data');
-          }
+    _process!.stderr
+        .transform(utf8.decoder)
+        .listen(
+          (data) {
+            if (data.isNotEmpty) {
+              // In debug mode, print stderr output
+              if (!const bool.fromEnvironment('dart.vm.product')) {
+                // ignore: avoid_print
+                print('[Copilot CLI stderr] $data');
+              }
 
-          // Look for port announcement: "Listening on port XXXX"
-          final portMatch =
-              RegExp(r'Listening on port (\d+)').firstMatch(data);
-          if (portMatch != null && !portCompleter.isCompleted) {
-            final port = int.parse(portMatch.group(1)!);
-            portCompleter.complete(port);
-          }
-        }
-      },
-      onError: (Object error) {
-        if (!portCompleter.isCompleted) {
-          portCompleter.completeError(
-            StateError('Failed to read CLI stderr: $error'),
-          );
-        }
-      },
-    );
+              // Look for port announcement: "Listening on port XXXX"
+              final portMatch = RegExp(
+                r'Listening on port (\d+)',
+              ).firstMatch(data);
+              if (portMatch != null && !portCompleter.isCompleted) {
+                final port = int.parse(portMatch.group(1)!);
+                portCompleter.complete(port);
+              }
+            }
+          },
+          onError: (Object error) {
+            if (!portCompleter.isCompleted) {
+              portCompleter.completeError(
+                StateError('Failed to read CLI stderr: $error'),
+              );
+            }
+          },
+        );
 
     // Wait for port with timeout
     final port = await portCompleter.future.timeout(
@@ -487,7 +490,8 @@ class CopilotClient {
 
   Map<String, dynamic> _buildUnsupportedToolResult(String toolName) {
     return {
-      'textResultForLlm': "Tool '$toolName' is not supported by this client instance.",
+      'textResultForLlm':
+          "Tool '$toolName' is not supported by this client instance.",
       'resultType': 'failure',
       'error': "tool '$toolName' not supported",
       'toolTelemetry': <String, dynamic>{},
@@ -852,7 +856,7 @@ class CopilotClient {
     }
 
     final result = await rpc.sendRequest('ping', <String, dynamic>{
-      if (message != null) 'message': message,
+      'message': ?message,
     });
     final resultMap = result! as Map<String, dynamic>;
     return PingResponse(

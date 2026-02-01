@@ -1,4 +1,4 @@
-export 'copilot_client.dart' show CopilotClient, sdkProtocolVersion;
+export 'copilot_client.dart' show CopilotClient;
 export 'copilot_config.dart'
     show
         AzureProviderConfig,
@@ -72,9 +72,6 @@ export 'copilot_types.dart'
         UserInputRequest,
         UserInputResult,
         VisionCapabilities;
+export 'protocol_version.dart' show sdkProtocolVersion;
 export 'tool_builder.dart'
-    show
-        SchemaBuilder,
-        SchemaProperty,
-        defineSimpleTool,
-        defineTool;
+    show SchemaBuilder, SchemaProperty, defineSimpleTool, defineTool;

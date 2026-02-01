@@ -20,5 +20,5 @@ Run all commands from `copilot_sdk/` directory using `fvm`:
 - Uses **very_good_analysis** for strict linting
 - Package imports: `package:copilot_sdk/src/...`
 - Prefer relative imports within same directory
-- Document public APIs with `///` comments
+- Document public APIs with `///` comments template docs to avoid duplication in class and default constructor
 - Use sealed classes for event hierarchies (pattern matching)

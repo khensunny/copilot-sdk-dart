@@ -1,0 +1,8 @@
+name: copilot_sdk_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+workspace:
+  - copilot_sdk

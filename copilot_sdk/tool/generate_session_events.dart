@@ -1,24 +1,26 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:mason_logger/mason_logger.dart';
 import 'package:schema2dart/schema2dart.dart';
 
 void main() async {
+  final logger = Logger();
   const schemaPath = 'schemas/session-events.schema.json';
   const outputPath = 'lib/src/models/generated/session_events.dart';
 
-  print('Loading schema from: $schemaPath');
+  logger.info('Loading schema from: $schemaPath');
 
   final schemaFile = File(schemaPath);
   if (!schemaFile.existsSync()) {
-    print('Error: Schema file not found at $schemaPath');
+    logger.err('Schema file not found at $schemaPath');
     exit(1);
   }
 
   final schemaJson =
       jsonDecode(schemaFile.readAsStringSync()) as Map<String, dynamic>;
 
-  print('Schema loaded, generating Dart types...');
+  logger.info('Schema loaded, generating Dart types...');
 
   const options = SchemaGeneratorOptions(
     rootClassName: 'SessionEvent',
@@ -34,6 +36,6 @@ void main() async {
   outputFile.parent.createSync(recursive: true);
   outputFile.writeAsStringSync(dartCode);
 
-  print('Dart types generated at: $outputPath');
-  print('Generated ${dartCode.split('\n').length} lines of code');
+  logger.success('Dart types generated at: $outputPath');
+  logger.detail('Generated ${dartCode.split('\n').length} lines of code');
 }
