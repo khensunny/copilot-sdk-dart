@@ -1,7 +1,8 @@
-/// Dart SDK for GitHub Copilot CLI - JSON-RPC client for agentic AI interactions.
+/// Dart SDK for GitHub Copilot CLI - JSON-RPC client for agentic AI
+/// interactions.
 ///
-/// This library provides a Dart interface to communicate with the GitHub Copilot
-/// CLI in server mode via stdio or TCP transports using JSON-RPC 2.0.
+/// This library provides a Dart interface to communicate with the GitHub
+/// Copilot CLI in server mode via stdio or TCP transports using JSON-RPC 2.0.
 ///
 /// ## Usage
 ///

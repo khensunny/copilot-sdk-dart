@@ -9,6 +9,7 @@ import 'package:copilot_sdk/src/copilot/protocol_version.dart';
 import 'package:copilot_sdk/src/jsonrpc/jsonrpc.dart';
 import 'package:copilot_sdk/src/models/generated/session_events.dart';
 import 'package:copilot_sdk/src/transports/transports.dart';
+import 'package:mason_logger/mason_logger.dart';
 
 /// Main client for interacting with the Copilot CLI.
 ///
@@ -102,6 +103,10 @@ class CopilotClient {
   /// final client = CopilotClient.createNonBlocking(const CopilotConfig());
   /// await client.initialized;
   /// ```
+  // This must be a static method (not a factory) because it initiates
+  // async work without awaiting, returning the client immediately.
+  // The static method avoids returning a Future while still starting work.
+  // ignore: prefer_constructors_over_static_methods
   static CopilotClient createNonBlocking(CopilotConfig config) {
     final client = CopilotClient._(config: config);
     unawaited(client._initialize());
@@ -167,16 +172,16 @@ class CopilotClient {
 
     if (serverVersion == null) {
       throw StateError(
-        'SDK protocol version mismatch: SDK expects version $sdkProtocolVersion, '
-        'but server does not report a protocol version. '
+        'SDK protocol version mismatch: SDK expects version '
+        '$sdkProtocolVersion, but server does not report a protocol version. '
         'Please update your server to ensure compatibility.',
       );
     }
 
     if (serverVersion != sdkProtocolVersion) {
       throw StateError(
-        'SDK protocol version mismatch: SDK expects version $sdkProtocolVersion, '
-        'but server reports version $serverVersion. '
+        'SDK protocol version mismatch: SDK expects version '
+        '$sdkProtocolVersion, but server reports version $serverVersion. '
         'Please update your SDK or server to ensure compatibility.',
       );
     }
@@ -238,8 +243,9 @@ class CopilotClient {
 
     // Add auth-related flags (matching TypeScript SDK behavior)
     if (_config.githubToken != null) {
-      args.add('--auth-token-env');
-      args.add('COPILOT_SDK_AUTH_TOKEN');
+      args
+        ..add('--auth-token-env')
+        ..add('COPILOT_SDK_AUTH_TOKEN');
     }
     if (_config.useLoggedInUser == false) {
       args.add('--no-auto-login');
@@ -261,11 +267,12 @@ class CopilotClient {
     );
 
     // Forward stderr to debug output
+    final logger = Logger();
     _process!.stderr.transform(utf8.decoder).listen((data) {
       if (data.isNotEmpty) {
-        // In debug mode, print stderr output
+        // In debug mode, log stderr output
         if (!const bool.fromEnvironment('dart.vm.product')) {
-          print('[Copilot CLI stderr] $data');
+          logger.info('[Copilot CLI stderr] $data');
         }
       }
     });
@@ -294,8 +301,9 @@ class CopilotClient {
 
     // Add auth-related flags (matching TypeScript SDK behavior)
     if (_config.githubToken != null) {
-      args.add('--auth-token-env');
-      args.add('COPILOT_SDK_AUTH_TOKEN');
+      args
+        ..add('--auth-token-env')
+        ..add('COPILOT_SDK_AUTH_TOKEN');
     }
     if (_config.useLoggedInUser == false) {
       args.add('--no-auto-login');
@@ -325,10 +333,9 @@ class CopilotClient {
         .listen(
           (data) {
             if (data.isNotEmpty) {
-              // In debug mode, print stderr output
+              // In debug mode, log stderr output
               if (!const bool.fromEnvironment('dart.vm.product')) {
-                // ignore: avoid_print
-                print('[Copilot CLI stderr] $data');
+                Logger().info('[Copilot CLI stderr] $data');
               }
 
               // Look for port announcement: "Listening on port XXXX"
@@ -356,7 +363,8 @@ class CopilotClient {
       onTimeout: () {
         _process?.kill();
         throw TimeoutException(
-          'Copilot CLI failed to start within ${startupTimeout.inSeconds} seconds',
+          'Copilot CLI failed to start within '
+          '${startupTimeout.inSeconds} seconds',
         );
       },
     );
@@ -378,7 +386,7 @@ class CopilotClient {
 
     _transportSubscription = transport.incoming.listen(
       (message) {
-        _rpcClient?.handleMessage(message);
+        unawaited(_rpcClient?.handleMessage(message));
       },
       onError: (Object error) {
         _setConnectionState(ConnectionState.error);
@@ -475,7 +483,7 @@ class CopilotClient {
       final normalized = _normalizeToolResult(result);
       // Wrap in { result: ... } as expected by CLI
       return {'result': normalized};
-    } catch (e) {
+    } on Exception catch (e) {
       return {
         'result': _normalizeToolResult(
           ToolResult.failure(
@@ -559,7 +567,7 @@ class CopilotClient {
       final request = PermissionRequest.fromJson(permissionRequest);
       final result = await session.handlePermissionRequest(request);
       return {'result': result.toJson()};
-    } catch (_) {
+    } on Exception {
       return {
         'result': PermissionResult.denied(
           PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
@@ -670,7 +678,7 @@ class CopilotClient {
   SessionEvent? _tryParseEvent(Map<String, dynamic> eventData) {
     try {
       return SessionEvent.fromJson(eventData);
-    } catch (_) {
+    } on Exception {
       return null;
     }
   }
@@ -730,17 +738,14 @@ class CopilotClient {
       workspacePath: workspacePath,
     );
 
-    // Don't notify server during initial registration - already sent in session.create
+    // Don't notify server during initial registration
+    // (tools already sent in session.create)
+    // These methods don't return the session, so cascade notation won't work.
+    // Keeping explicit calls mirrors the TypeScript SDK registration flow.
     session.registerTools(config.tools, notifyServer: false);
-    if (config.onPermissionRequest != null) {
-      session.registerPermissionHandler(config.onPermissionRequest);
-    }
-    if (config.onUserInputRequest != null) {
-      session.registerUserInputHandler(config.onUserInputRequest);
-    }
-    if (config.hooks != null) {
-      session.registerHooks(config.hooks);
-    }
+    session.registerPermissionHandler(config.onPermissionRequest);
+    session.registerUserInputHandler(config.onUserInputRequest);
+    session.registerHooks(config.hooks);
 
     _sessions[sessionId] = session;
     return session;
@@ -819,17 +824,14 @@ class CopilotClient {
       workspacePath: workspacePath,
     );
 
-    // Don't notify server during initial registration - already sent in session.resume
+    // Don't notify server during initial registration
+    // (tools already sent in session.resume)
+    // These methods don't return the session, so cascade notation won't work.
+    // Keeping explicit calls mirrors the TypeScript SDK registration flow.
     session.registerTools(config.tools, notifyServer: false);
-    if (config.onPermissionRequest != null) {
-      session.registerPermissionHandler(config.onPermissionRequest);
-    }
-    if (config.onUserInputRequest != null) {
-      session.registerUserInputHandler(config.onUserInputRequest);
-    }
-    if (config.hooks != null) {
-      session.registerHooks(config.hooks);
-    }
+    session.registerPermissionHandler(config.onPermissionRequest);
+    session.registerUserInputHandler(config.onUserInputRequest);
+    session.registerHooks(config.hooks);
 
     _sessions[resumedSessionId] = session;
     return session;
@@ -1052,8 +1054,8 @@ class CopilotClient {
           await session.destroy();
           lastError = null;
           break;
-        } catch (e) {
-          lastError = e is Exception ? e : Exception(e.toString());
+        } on Exception catch (e) {
+          lastError = e;
           if (attempt < 3) {
             final delay = Duration(milliseconds: 100 * (1 << (attempt - 1)));
             await Future<void>.delayed(delay);
@@ -1097,17 +1099,23 @@ class CopilotClient {
 
     try {
       await _rpcClient?.dispose();
-    } catch (_) {}
+    } on Exception {
+      // Ignore cleanup errors during force stop
+    }
     _rpcClient = null;
 
     try {
       await _transport?.close();
-    } catch (_) {}
+    } on Exception {
+      // Ignore cleanup errors during force stop
+    }
     _transport = null;
 
     try {
       _process?.kill(ProcessSignal.sigkill);
-    } catch (_) {}
+    } on Exception {
+      // Ignore cleanup errors during force stop
+    }
     _process = null;
 
     await _transportSubscription?.cancel();

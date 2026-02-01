@@ -114,7 +114,7 @@ class JsonRpcClient {
             sendResponse(id, result);
           } on JsonRpcException catch (e) {
             sendErrorResponse(id, e.error);
-          } catch (e) {
+          } on Exception catch (e) {
             sendErrorResponse(
               id,
               JsonRpcError(

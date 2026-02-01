@@ -831,7 +831,6 @@ enum SessionStartSource {
   resume,
 
   /// Session created as a new conversation.
-  // ignore: constant_identifier_names
   new_,
 }
 

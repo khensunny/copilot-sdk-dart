@@ -501,8 +501,9 @@ ToolDefinition defineTool(
   };
 
   final required = <String>[];
+  final properties = schema['properties']! as Map<String, dynamic>;
   for (final entry in params.entries) {
-    schema['properties']![entry.key] = entry.value.toJson();
+    properties[entry.key] = entry.value.toJson();
     if (entry.value.required) {
       required.add(entry.key);
     }

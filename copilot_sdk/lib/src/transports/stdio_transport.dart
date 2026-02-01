@@ -92,7 +92,7 @@ class StdioTransport implements Transport {
       try {
         final message = utf8.decode(messageBytes);
         _incomingController.add(message);
-      } catch (error) {
+      } on Exception catch (error) {
         _incomingController.addError(error);
       }
     }

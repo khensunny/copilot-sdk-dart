@@ -40,8 +40,9 @@ class TcpTransport implements Transport {
     }
     final messageBytes = utf8.encode(message);
     final header = 'Content-Length: ${messageBytes.length}\r\n\r\n';
-    _socket.add(utf8.encode(header));
-    _socket.add(messageBytes);
+    _socket
+      ..add(utf8.encode(header))
+      ..add(messageBytes);
     unawaited(_socket.flush());
   }
 
@@ -90,7 +91,7 @@ class TcpTransport implements Transport {
       try {
         final message = utf8.decode(messageBytes);
         _incomingController.add(message);
-      } catch (error) {
+      } on Exception catch (error) {
         _incomingController.addError(error);
       }
     }

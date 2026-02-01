@@ -63,7 +63,8 @@ class CopilotSession {
   final JsonRpcClient _rpcClient;
   final SessionConfig _config;
 
-  /// Path to the session workspace directory when infinite sessions are enabled.
+  /// Path to the session workspace directory when infinite sessions are
+  /// enabled.
   final String? workspacePath;
 
   final _toolHandlers = <String, ToolHandler>{};
@@ -206,7 +207,7 @@ class CopilotSession {
         'sessionId': sessionId,
         'tool': tool.toJson(),
       });
-    } catch (_) {
+    } on Exception {
       // Silently fail - server may not support dynamic tool registration
     }
   }
@@ -217,7 +218,7 @@ class CopilotSession {
         'sessionId': sessionId,
         'tools': tools.map((t) => t.toJson()).toList(),
       });
-    } catch (_) {
+    } on Exception {
       // Silently fail - server may not support dynamic tool registration
     }
   }
@@ -228,7 +229,7 @@ class CopilotSession {
         'sessionId': sessionId,
         'toolName': toolName,
       });
-    } catch (_) {
+    } on Exception {
       // Silently fail - server may not support dynamic tool registration
     }
   }
@@ -237,16 +238,28 @@ class CopilotSession {
   ToolHandler? getToolHandler(String name) => _toolHandlers[name];
 
   /// Register a permission handler.
+  ///
+  /// This method is part of the public API and mirrors the TypeScript SDK.
+  /// Keeping it as a method avoids a breaking change to callers.
+  // ignore: use_setters_to_change_properties
   void registerPermissionHandler(PermissionHandler? handler) {
     _permissionHandler = handler;
   }
 
   /// Register a user input handler.
+  ///
+  /// This method is part of the public API and mirrors the TypeScript SDK.
+  /// Keeping it as a method avoids a breaking change to callers.
+  // ignore: use_setters_to_change_properties
   void registerUserInputHandler(UserInputHandler? handler) {
     _userInputHandler = handler;
   }
 
   /// Register hook handlers.
+  ///
+  /// This method is part of the public API and mirrors the TypeScript SDK.
+  /// Keeping it as a method avoids a breaking change to callers.
+  // ignore: use_setters_to_change_properties
   void registerHooks(SessionHooks? hooks) {
     _hooks = hooks;
   }
@@ -353,7 +366,8 @@ class CopilotSession {
         timeout,
         onTimeout: () {
           throw TimeoutException(
-            'Timeout after ${timeout.inMilliseconds}ms waiting for session.idle',
+            'Timeout after ${timeout.inMilliseconds}ms waiting '
+            'for session.idle',
           );
         },
       );
@@ -486,7 +500,7 @@ class CopilotSession {
         arguments: request.additionalFields ?? {},
       );
       return await _permissionHandler!(request, invocation);
-    } catch (_) {
+    } on Exception {
       return PermissionResult.denied(
         PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
       );
@@ -559,7 +573,7 @@ class CopilotSession {
         default:
           return null;
       }
-    } catch (_) {
+    } on Exception {
       return null;
     }
   }
@@ -654,7 +668,9 @@ class CopilotSession {
     for (final handler in _anyHandlers) {
       try {
         handler(event);
-      } catch (_) {}
+      } on Exception {
+        // Ignore errors from individual handlers
+      }
     }
 
     final handlers = _typedHandlers[event.runtimeType];
@@ -662,7 +678,9 @@ class CopilotSession {
       for (final handler in handlers) {
         try {
           handler(event);
-        } catch (_) {}
+        } on Exception {
+          // Ignore errors from individual handlers
+        }
       }
     }
 

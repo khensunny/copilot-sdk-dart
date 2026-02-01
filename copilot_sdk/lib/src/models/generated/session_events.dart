@@ -4,7 +4,7 @@
 // ignore_for_file: public_member_api_docs, lines_longer_than_80_chars
 // ignore_for_file: avoid_catches_without_on_clauses, unnecessary_cast
 // ignore_for_file: unused_local_variable, unnecessary_non_null_assertion
-// ignore_for_file: prefer_interpolation_to_compose_strings, cascade_invocations
+// ignore_for_file: prefer_interpolation_to_compose_strings
 
 import 'dart:convert';
 

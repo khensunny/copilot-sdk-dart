@@ -36,6 +36,8 @@ void main() async {
   outputFile.parent.createSync(recursive: true);
   outputFile.writeAsStringSync(dartCode);
 
-  logger.success('Dart types generated at: $outputPath');
-  logger.detail('Generated ${dartCode.split('\n').length} lines of code');
+  // Log completion after the output file is written.
+  logger
+    ..success('Dart types generated at: $outputPath')
+    ..detail('Generated ${dartCode.split('\n').length} lines of code');
 }
