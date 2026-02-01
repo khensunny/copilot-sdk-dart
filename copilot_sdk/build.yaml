@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      schema2dart|schema_builder:
+        options:
+          root_class: SessionEvent
+          emit_validation_helpers: true
+          emit_docs: true
+          prefer_camel_case: true
+          default_dialect: "https://json-schema.org/draft/2020-12/schema"
+          single_file_output: true
+          generate_helpers: true
+        generate_for:
+          - lib/schemas/**/*.json

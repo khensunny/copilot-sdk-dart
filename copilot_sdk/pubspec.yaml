@@ -1,0 +1,22 @@
+name: copilot_sdk
+description: Dart SDK for GitHub Copilot CLI - JSON-RPC client for agentic AI interactions
+version: 0.1.0+1
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  freezed_annotation: ^3.0.0
+  json_annotation: ^4.9.0
+  meta: ^1.16.0
+  uuid: ^4.5.1
+
+dev_dependencies:
+  build_runner: ^2.4.15
+  freezed: ^3.0.6
+  json_serializable: ^6.9.5
+  mocktail: ^1.0.4
+  schema2dart: ^1.0.0
+  test: ^1.26.3
+  very_good_analysis: ^10.0.0
