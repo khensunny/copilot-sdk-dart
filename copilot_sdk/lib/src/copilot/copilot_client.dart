@@ -563,6 +563,13 @@ class CopilotClient {
           PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
         ).toJson(),
       };
+    } on Error {
+      // Handle Error subclasses (like StateError) that aren't Exceptions
+      return {
+        'result': PermissionResult.denied(
+          PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
+        ).toJson(),
+      };
     }
   }
 

@@ -1,3 +1,6 @@
+@Tags(['e2e'])
+library;
+
 import 'dart:io' as io;
 
 import 'package:copilot_sdk/copilot_sdk.dart';

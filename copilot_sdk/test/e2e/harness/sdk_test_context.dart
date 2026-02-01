@@ -150,10 +150,18 @@ String _snapshotFilePath(({String file, int? line, String name}) testInfo) {
   }
 
   final testFileName = testInfo.file.split(io.Platform.pathSeparator).last;
-  final basename = testFileName.substring(
+  var basename = testFileName.substring(
     0,
     testFileName.length - suffix.length,
   );
+  
+  // Remove '_test' suffix to match TypeScript snapshot directory naming
+  // TypeScript uses: permissions.test.ts -> snapshots/permissions/
+  // Dart uses: permissions_test.dart -> should match snapshots/permissions/
+  if (basename.endsWith('_test')) {
+    basename = basename.substring(0, basename.length - 5);
+  }
+  
   final taskName = testInfo.name.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '_');
   return _snapshotsDir.uri.resolve('$basename/$taskName.yaml').toFilePath();
 }

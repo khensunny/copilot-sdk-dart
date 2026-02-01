@@ -500,6 +500,11 @@ class CopilotSession {
       return PermissionResult.denied(
         PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
       );
+    } on Error {
+      // Handle Error subclasses (like StateError) that aren't Exceptions
+      return PermissionResult.denied(
+        PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
+      );
     }
   }
 
