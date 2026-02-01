@@ -73,5 +73,4 @@ export 'copilot_types.dart'
         UserInputResult,
         VisionCapabilities;
 export 'protocol_version.dart' show sdkProtocolVersion;
-export 'tool_builder.dart'
-    show SchemaBuilder, SchemaProperty, defineSimpleTool, defineTool;
+export 'tool_builder.dart' show SchemaBuilder, SchemaProperty, defineSimpleTool, defineTool;

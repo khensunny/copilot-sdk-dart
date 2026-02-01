@@ -287,8 +287,7 @@ class CopilotSession {
     final params = <String, dynamic>{
       'sessionId': sessionId,
       'prompt': message,
-      if (attachments != null && attachments.isNotEmpty)
-        'attachments': attachments.map((a) => a.toJson()).toList(),
+      if (attachments != null && attachments.isNotEmpty) 'attachments': attachments.map((a) => a.toJson()).toList(),
       'mode': ?mode,
     };
 
@@ -401,10 +400,7 @@ class CopilotSession {
     final resultMap = result! as Map<String, dynamic>;
     final eventsList = resultMap['events'] as List<dynamic>;
 
-    return eventsList
-        .cast<Map<String, dynamic>>()
-        .map(SessionEvent.fromJson)
-        .toList();
+    return eventsList.cast<Map<String, dynamic>>().map(SessionEvent.fromJson).toList();
   }
 
   /// Aborts the currently processing message in this session.
@@ -614,9 +610,7 @@ class CopilotSession {
     final map = input! as Map<String, dynamic>;
     final sourceStr = map['source'] as String? ?? 'startup';
     final source = SessionStartSource.values.firstWhere(
-      (e) =>
-          e.name == sourceStr ||
-          (sourceStr == 'new' && e == SessionStartSource.new_),
+      (e) => e.name == sourceStr || (sourceStr == 'new' && e == SessionStartSource.new_),
       orElse: () => SessionStartSource.startup,
     );
     return SessionStartHookInput(

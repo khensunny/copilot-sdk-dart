@@ -31,12 +31,7 @@ class SchemaBuilder {
     return SchemaProperty.object(
       properties: properties,
       description: description,
-      required:
-          required ??
-          properties.entries
-              .where((e) => e.value.isRequired)
-              .map((e) => e.key)
-              .toList(),
+      required: required ?? properties.entries.where((e) => e.value.isRequired).map((e) => e.key).toList(),
     );
   }
 
@@ -399,10 +394,7 @@ class SchemaProperty {
 
     if (properties != null) {
       json['properties'] = properties!.map((k, v) => MapEntry(k, v.toJson()));
-      final requiredProps = properties!.entries
-          .where((e) => e.value.required)
-          .map((e) => e.key)
-          .toList();
+      final requiredProps = properties!.entries.where((e) => e.value.required).map((e) => e.key).toList();
       if (requiredProps.isNotEmpty) {
         json['required'] = requiredProps;
       }

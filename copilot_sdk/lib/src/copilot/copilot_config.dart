@@ -109,12 +109,10 @@ sealed class SystemMessageConfig {
   const SystemMessageConfig();
 
   /// Creates an append-mode system message config.
-  factory SystemMessageConfig.append({String? content}) =
-      SystemMessageAppendConfig;
+  factory SystemMessageConfig.append({String? content}) = SystemMessageAppendConfig;
 
   /// Creates a replace-mode system message config.
-  factory SystemMessageConfig.replace({required String content}) =
-      SystemMessageReplaceConfig;
+  factory SystemMessageConfig.replace({required String content}) = SystemMessageReplaceConfig;
 
   /// Serializes the system message config to JSON.
   Map<String, dynamic> toJson();
@@ -306,8 +304,7 @@ class CustomAgentConfig {
       if (description != null) 'description': description,
       if (tools != null) 'tools': tools,
       'prompt': prompt,
-      if (mcpServers != null)
-        'mcpServers': mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
+      if (mcpServers != null) 'mcpServers': mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
       'infer': infer,
     };
   }
@@ -335,10 +332,8 @@ class InfiniteSessionConfig {
   Map<String, dynamic> toJson() {
     return {
       'enabled': enabled,
-      if (backgroundCompactionThreshold != null)
-        'backgroundCompactionThreshold': backgroundCompactionThreshold,
-      if (bufferExhaustionThreshold != null)
-        'bufferExhaustionThreshold': bufferExhaustionThreshold,
+      if (backgroundCompactionThreshold != null) 'backgroundCompactionThreshold': backgroundCompactionThreshold,
+      if (bufferExhaustionThreshold != null) 'bufferExhaustionThreshold': bufferExhaustionThreshold,
     };
   }
 }
@@ -700,10 +695,8 @@ class PreToolUseHookOutput {
   /// Serializes the hook output to JSON.
   Map<String, dynamic> toJson() {
     return {
-      if (permissionDecision != null)
-        'permissionDecision': permissionDecision!.name,
-      if (permissionDecisionReason != null)
-        'permissionDecisionReason': permissionDecisionReason,
+      if (permissionDecision != null) 'permissionDecision': permissionDecision!.name,
+      if (permissionDecisionReason != null) 'permissionDecisionReason': permissionDecisionReason,
       if (modifiedArgs != null) 'modifiedArgs': modifiedArgs,
       if (additionalContext != null) 'additionalContext': additionalContext,
       if (suppressOutput != null) 'suppressOutput': suppressOutput,

@@ -56,8 +56,7 @@ class CopilotClient {
   Process? _process;
 
   final _sessions = <String, CopilotSession>{};
-  final _connectionStateController =
-      StreamController<ConnectionState>.broadcast();
+  final _connectionStateController = StreamController<ConnectionState>.broadcast();
 
   ConnectionState _currentState = ConnectionState.disconnected;
   Completer<void>? _initCompleter;
@@ -66,8 +65,7 @@ class CopilotClient {
   bool _forceStopping = false;
 
   /// Stream of connection state changes.
-  Stream<ConnectionState> get connectionState =>
-      _connectionStateController.stream;
+  Stream<ConnectionState> get connectionState => _connectionStateController.stream;
 
   /// Current connection state.
   ConnectionState get currentState => _currentState;
@@ -213,9 +211,7 @@ class CopilotClient {
     }
 
     // On Windows, if cliPath doesn't contain path separators, use cmd /c
-    if (Platform.isWindows &&
-        !cliPath.contains('/') &&
-        !cliPath.contains(r'\')) {
+    if (Platform.isWindows && !cliPath.contains('/') && !cliPath.contains(r'\')) {
       return ['cmd', '/c', cliPath];
     }
 
@@ -225,10 +221,7 @@ class CopilotClient {
   Future<void> _spawnProcess() async {
     // Use COPILOT_CLI_PATH environment variable if available,
     // otherwise use config or default
-    final cliPath =
-        _config.cliPath ??
-        Platform.environment['COPILOT_CLI_PATH'] ??
-        'copilot';
+    final cliPath = _config.cliPath ?? Platform.environment['COPILOT_CLI_PATH'] ?? 'copilot';
     final command = _resolveCliCommand(cliPath);
 
     final args = <String>[
@@ -283,17 +276,18 @@ class CopilotClient {
   Future<void> _spawnTcpProcess() async {
     // Use COPILOT_CLI_PATH environment variable if available,
     // otherwise use config or default
-    final cliPath =
-        _config.cliPath ??
-        Platform.environment['COPILOT_CLI_PATH'] ??
-        'copilot';
+    final cliPath = _config.cliPath ?? Platform.environment['COPILOT_CLI_PATH'] ?? 'copilot';
     final command = _resolveCliCommand(cliPath);
 
     final args = <String>[
       ...?_config.cliArgs,
       '--server',
-      '--port',
     ];
+
+    // Only add --port if a specific port is configured
+    if (_config.port != null && _config.port! > 0) {
+      args.addAll(['--port', _config.port.toString()]);
+    }
 
     if (_config.logLevel != null) {
       args.addAll(['--log-level', _config.logLevel!.name]);
@@ -324,23 +318,24 @@ class CopilotClient {
       environment: environment.isNotEmpty ? environment : null,
     );
 
-    // Listen for port announcement on stderr
+    // Listen for port announcement on stdout
     final portCompleter = Completer<int>();
     final startupTimeout = _config.timeout;
 
-    _process!.stderr
+    _process!.stdout
         .transform(utf8.decoder)
         .listen(
           (data) {
             if (data.isNotEmpty) {
-              // In debug mode, log stderr output
+              // In debug mode, log stdout output
               if (!const bool.fromEnvironment('dart.vm.product')) {
-                Logger().info('[Copilot CLI stderr] $data');
+                Logger().info('[Copilot CLI stdout] $data');
               }
 
-              // Look for port announcement: "Listening on port XXXX"
+              // Look for port announcement: "listening on port XXXX" (CLI outputs on stdout)
               final portMatch = RegExp(
-                r'Listening on port (\d+)',
+                r'listening on port (\d+)',
+                caseSensitive: false,
               ).firstMatch(data);
               if (portMatch != null && !portCompleter.isCompleted) {
                 final port = int.parse(portMatch.group(1)!);
@@ -351,7 +346,7 @@ class CopilotClient {
           onError: (Object error) {
             if (!portCompleter.isCompleted) {
               portCompleter.completeError(
-                StateError('Failed to read CLI stderr: $error'),
+                StateError('Failed to read CLI stdout: $error'),
               );
             }
           },
@@ -447,8 +442,7 @@ class CopilotClient {
     final sessionId = params['sessionId'] as String?;
     final toolName = params['toolName'] as String?;
     final toolCallId = params['toolCallId'] as String?;
-    final arguments =
-        (params['arguments'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+    final arguments = (params['arguments'] as Map<String, dynamic>?) ?? <String, dynamic>{};
 
     if (sessionId == null || toolName == null || toolCallId == null) {
       throw const JsonRpcException(
@@ -498,8 +492,7 @@ class CopilotClient {
 
   Map<String, dynamic> _buildUnsupportedToolResult(String toolName) {
     return {
-      'textResultForLlm':
-          "Tool '$toolName' is not supported by this client instance.",
+      'textResultForLlm': "Tool '$toolName' is not supported by this client instance.",
       'resultType': 'failure',
       'error': "tool '$toolName' not supported",
       'toolTelemetry': <String, dynamic>{},
@@ -519,9 +512,7 @@ class CopilotClient {
     }
 
     // Duck-type check for ToolResult-like object
-    if (result is Map<String, dynamic> &&
-        result.containsKey('textResultForLlm') &&
-        result.containsKey('resultType')) {
+    if (result is Map<String, dynamic> && result.containsKey('textResultForLlm') && result.containsKey('resultType')) {
       // Ensure toolTelemetry is present
       if (!result.containsKey('toolTelemetry')) {
         result['toolTelemetry'] = <String, dynamic>{};
@@ -541,8 +532,7 @@ class CopilotClient {
     }
 
     final sessionId = params['sessionId'] as String?;
-    final permissionRequest =
-        params['permissionRequest'] as Map<String, dynamic>?;
+    final permissionRequest = params['permissionRequest'] as Map<String, dynamic>?;
 
     if (sessionId == null || permissionRequest == null) {
       throw const JsonRpcException(
@@ -697,33 +687,23 @@ class CopilotClient {
     final params = <String, dynamic>{
       if (config.model != null) 'model': config.model,
       if (config.sessionId != null) 'sessionId': config.sessionId,
-      if (config.reasoningEffort != null)
-        'reasoningEffort': config.reasoningEffort!.name,
-      if (config.tools != null)
-        'tools': config.tools!.map((t) => t.toJson()).toList(),
-      if (config.systemMessage != null)
-        'systemMessage': config.systemMessage!.toJson(),
-      if (config.availableTools != null)
-        'availableTools': config.availableTools,
+      if (config.reasoningEffort != null) 'reasoningEffort': config.reasoningEffort!.name,
+      if (config.tools != null) 'tools': config.tools!.map((t) => t.toJson()).toList(),
+      if (config.systemMessage != null) 'systemMessage': config.systemMessage!.toJson(),
+      if (config.availableTools != null) 'availableTools': config.availableTools,
       if (config.excludedTools != null) 'excludedTools': config.excludedTools,
       if (config.provider != null) 'provider': config.provider!.toJson(),
       'requestPermission': config.onPermissionRequest != null,
       'requestUserInput': config.onUserInputRequest != null,
       'hooks': config.hooks != null && _hasAnyHook(config.hooks!),
-      if (config.workingDirectory != null)
-        'workingDirectory': config.workingDirectory,
+      if (config.workingDirectory != null) 'workingDirectory': config.workingDirectory,
       'streaming': config.streaming,
-      if (config.mcpServers != null)
-        'mcpServers': config.mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
-      if (config.customAgents != null)
-        'customAgents': config.customAgents!.map((a) => a.toJson()).toList(),
+      if (config.mcpServers != null) 'mcpServers': config.mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
+      if (config.customAgents != null) 'customAgents': config.customAgents!.map((a) => a.toJson()).toList(),
       if (config.configDir != null) 'configDir': config.configDir,
-      if (config.skillDirectories != null)
-        'skillDirectories': config.skillDirectories,
-      if (config.disabledSkills != null)
-        'disabledSkills': config.disabledSkills,
-      if (config.infiniteSessions != null)
-        'infiniteSessions': config.infiniteSessions!.toJson(),
+      if (config.skillDirectories != null) 'skillDirectories': config.skillDirectories,
+      if (config.disabledSkills != null) 'disabledSkills': config.disabledSkills,
+      if (config.infiniteSessions != null) 'infiniteSessions': config.infiniteSessions!.toJson(),
     };
 
     final result = await rpc.sendRequest('session.create', params);
@@ -774,25 +754,18 @@ class CopilotClient {
 
     final params = <String, dynamic>{
       'sessionId': sessionId,
-      if (config.reasoningEffort != null)
-        'reasoningEffort': config.reasoningEffort!.name,
-      if (config.tools != null)
-        'tools': config.tools!.map((t) => t.toJson()).toList(),
+      if (config.reasoningEffort != null) 'reasoningEffort': config.reasoningEffort!.name,
+      if (config.tools != null) 'tools': config.tools!.map((t) => t.toJson()).toList(),
       if (config.provider != null) 'provider': config.provider!.toJson(),
       'requestPermission': config.onPermissionRequest != null,
       'requestUserInput': config.onUserInputRequest != null,
       'hooks': config.hooks != null && _hasAnyHook(config.hooks!),
-      if (config.workingDirectory != null)
-        'workingDirectory': config.workingDirectory,
+      if (config.workingDirectory != null) 'workingDirectory': config.workingDirectory,
       'streaming': config.streaming,
-      if (config.mcpServers != null)
-        'mcpServers': config.mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
-      if (config.customAgents != null)
-        'customAgents': config.customAgents!.map((a) => a.toJson()).toList(),
-      if (config.skillDirectories != null)
-        'skillDirectories': config.skillDirectories,
-      if (config.disabledSkills != null)
-        'disabledSkills': config.disabledSkills,
+      if (config.mcpServers != null) 'mcpServers': config.mcpServers!.map((k, v) => MapEntry(k, v.toJson())),
+      if (config.customAgents != null) 'customAgents': config.customAgents!.map((a) => a.toJson()).toList(),
+      if (config.skillDirectories != null) 'skillDirectories': config.skillDirectories,
+      if (config.disabledSkills != null) 'disabledSkills': config.disabledSkills,
       if (config.disableResume) 'disableResume': config.disableResume,
     };
 
@@ -932,10 +905,7 @@ class CopilotClient {
     final resultMap = result! as Map<String, dynamic>;
     final modelsList = resultMap['models'] as List<dynamic>;
 
-    _modelsCache = modelsList
-        .cast<Map<String, dynamic>>()
-        .map(ModelInfo.fromJson)
-        .toList();
+    _modelsCache = modelsList.cast<Map<String, dynamic>>().map(ModelInfo.fromJson).toList();
 
     return List.from(_modelsCache!);
   }
@@ -1021,10 +991,7 @@ class CopilotClient {
     final resultMap = result! as Map<String, dynamic>;
     final sessionsList = resultMap['sessions'] as List<dynamic>;
 
-    return sessionsList
-        .cast<Map<String, dynamic>>()
-        .map(SessionMetadata.fromJson)
-        .toList();
+    return sessionsList.cast<Map<String, dynamic>>().map(SessionMetadata.fromJson).toList();
   }
 
   /// Stops the CLI server and closes all active sessions.

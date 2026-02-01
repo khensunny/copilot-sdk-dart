@@ -606,7 +606,8 @@ void main() {
       );
       final providerJson = provider.toJson();
       expect(providerJson['type'], 'azure');
-      expect(providerJson['azure']?['apiVersion'], '2024-02-15');
+      final azureJson = providerJson['azure']! as Map<String, dynamic>;
+      expect(azureJson['apiVersion'], '2024-02-15');
     });
   });
 

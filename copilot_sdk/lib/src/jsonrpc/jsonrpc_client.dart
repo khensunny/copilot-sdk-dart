@@ -46,13 +46,11 @@ class JsonRpcClient {
   final _uuid = const Uuid();
   final _pendingRequests = <String, Completer<Object?>>{};
 
-  final _notificationController =
-      StreamController<JsonRpcNotification>.broadcast();
+  final _notificationController = StreamController<JsonRpcNotification>.broadcast();
   final _requestController = StreamController<JsonRpcRequest>.broadcast();
 
   /// Stream of incoming JSON-RPC notifications.
-  Stream<JsonRpcNotification> get onNotification =>
-      _notificationController.stream;
+  Stream<JsonRpcNotification> get onNotification => _notificationController.stream;
 
   /// Stream of incoming JSON-RPC requests.
   Stream<JsonRpcRequest> get onRequest => _requestController.stream;

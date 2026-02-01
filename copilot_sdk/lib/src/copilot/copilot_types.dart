@@ -76,12 +76,10 @@ class PermissionResult {
   });
 
   /// Creates an approved permission result.
-  factory PermissionResult.approved() =>
-      const PermissionResult(kind: PermissionResultKind.approved);
+  factory PermissionResult.approved() => const PermissionResult(kind: PermissionResultKind.approved);
 
   /// Creates a denied permission result.
-  factory PermissionResult.denied(PermissionResultKind kind) =>
-      PermissionResult(kind: kind);
+  factory PermissionResult.denied(PermissionResultKind kind) => PermissionResult(kind: kind);
 
   /// Parses a permission result from JSON.
   factory PermissionResult.fromJson(Map<String, dynamic> json) {
@@ -91,8 +89,7 @@ class PermissionResult {
       'denied-by-rules' => PermissionResultKind.deniedByRules,
       'denied-no-approval-rule-and-could-not-request-from-user' =>
         PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
-      'denied-interactively-by-user' =>
-        PermissionResultKind.deniedInteractivelyByUser,
+      'denied-interactively-by-user' => PermissionResultKind.deniedInteractivelyByUser,
       _ => PermissionResultKind.deniedByRules,
     };
     return PermissionResult(
@@ -114,8 +111,7 @@ class PermissionResult {
       PermissionResultKind.deniedByRules => 'denied-by-rules',
       PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser =>
         'denied-no-approval-rule-and-could-not-request-from-user',
-      PermissionResultKind.deniedInteractivelyByUser =>
-        'denied-interactively-by-user',
+      PermissionResultKind.deniedInteractivelyByUser => 'denied-interactively-by-user',
     };
     return {
       'kind': kindStr,
@@ -294,12 +290,10 @@ class ToolResult {
   );
 
   /// Creates a rejected tool result.
-  factory ToolResult.rejected(String text) =>
-      ToolResult(textResultForLlm: text, resultType: ToolResultType.rejected);
+  factory ToolResult.rejected(String text) => ToolResult(textResultForLlm: text, resultType: ToolResultType.rejected);
 
   /// Creates a denied tool result.
-  factory ToolResult.denied(String text) =>
-      ToolResult(textResultForLlm: text, resultType: ToolResultType.denied);
+  factory ToolResult.denied(String text) => ToolResult(textResultForLlm: text, resultType: ToolResultType.denied);
 
   /// Text output returned to the model.
   final String textResultForLlm;
@@ -324,10 +318,7 @@ class ToolResult {
     return {
       'textResultForLlm': textResultForLlm,
       'resultType': resultType.name,
-      if (binaryResultsForLlm != null)
-        'binaryResultsForLlm': binaryResultsForLlm!
-            .map((b) => b.toJson())
-            .toList(),
+      if (binaryResultsForLlm != null) 'binaryResultsForLlm': binaryResultsForLlm!.map((b) => b.toJson()).toList(),
       if (error != null) 'error': error,
       if (sessionLog != null) 'sessionLog': sessionLog,
       'toolTelemetry': toolTelemetry ?? {},
@@ -488,12 +479,11 @@ class Attachment {
   );
 
   /// Creates a directory attachment.
-  factory Attachment.directory(String path, {String? displayName}) =>
-      Attachment(
-        type: AttachmentType.directory,
-        path: path,
-        displayName: displayName,
-      );
+  factory Attachment.directory(String path, {String? displayName}) => Attachment(
+    type: AttachmentType.directory,
+    path: path,
+    displayName: displayName,
+  );
 
   /// Attachment type.
   final AttachmentType type;
@@ -585,9 +575,7 @@ class VisionCapabilities {
   /// Parses vision capabilities from JSON.
   factory VisionCapabilities.fromJson(Map<String, dynamic> json) {
     return VisionCapabilities(
-      supportedMediaTypes:
-          (json['supported_media_types'] as List<dynamic>?)?.cast<String>() ??
-          [],
+      supportedMediaTypes: (json['supported_media_types'] as List<dynamic>?)?.cast<String>() ?? [],
       maxPromptImages: json['max_prompt_images'] as int? ?? 0,
       maxPromptImageSize: json['max_prompt_image_size'] as int? ?? 0,
     );
@@ -704,21 +692,16 @@ class ModelInfo {
       capabilities: ModelCapabilities.fromJson(
         json['capabilities'] as Map<String, dynamic>,
       ),
-      policy: json['policy'] != null
-          ? ModelPolicy.fromJson(json['policy'] as Map<String, dynamic>)
-          : null,
-      billing: json['billing'] != null
-          ? ModelBilling.fromJson(json['billing'] as Map<String, dynamic>)
-          : null,
-      supportedReasoningEfforts:
-          (json['supportedReasoningEfforts'] as List<dynamic>?)
-              ?.map(
-                (e) => ReasoningEffort.values.firstWhere(
-                  (r) => r.name == e,
-                  orElse: () => ReasoningEffort.medium,
-                ),
-              )
-              .toList(),
+      policy: json['policy'] != null ? ModelPolicy.fromJson(json['policy'] as Map<String, dynamic>) : null,
+      billing: json['billing'] != null ? ModelBilling.fromJson(json['billing'] as Map<String, dynamic>) : null,
+      supportedReasoningEfforts: (json['supportedReasoningEfforts'] as List<dynamic>?)
+          ?.map(
+            (e) => ReasoningEffort.values.firstWhere(
+              (r) => r.name == e,
+              orElse: () => ReasoningEffort.medium,
+            ),
+          )
+          .toList(),
       defaultReasoningEffort: json['defaultReasoningEffort'] != null
           ? ReasoningEffort.values.firstWhere(
               (e) => e.name == json['defaultReasoningEffort'],
@@ -758,11 +741,8 @@ class ModelInfo {
       if (policy != null) 'policy': policy!.toJson(),
       if (billing != null) 'billing': billing!.toJson(),
       if (supportedReasoningEfforts != null)
-        'supportedReasoningEfforts': supportedReasoningEfforts!
-            .map((e) => e.name)
-            .toList(),
-      if (defaultReasoningEffort != null)
-        'defaultReasoningEffort': defaultReasoningEffort!.name,
+        'supportedReasoningEfforts': supportedReasoningEfforts!.map((e) => e.name).toList(),
+      if (defaultReasoningEffort != null) 'defaultReasoningEffort': defaultReasoningEffort!.name,
     };
   }
 }
@@ -929,8 +909,7 @@ class MessageOptions {
   Map<String, dynamic> toJson() {
     return {
       'prompt': prompt,
-      if (attachments != null)
-        'attachments': attachments!.map((a) => a.toJson()).toList(),
+      if (attachments != null) 'attachments': attachments!.map((a) => a.toJson()).toList(),
       if (mode != null) 'mode': mode,
     };
   }

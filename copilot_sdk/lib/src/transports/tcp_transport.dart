@@ -21,8 +21,7 @@ class TcpTransport implements Transport {
   }
 
   final Socket _socket;
-  final StreamController<String> _incomingController =
-      StreamController<String>.broadcast();
+  final StreamController<String> _incomingController = StreamController<String>.broadcast();
   late final StreamSubscription<List<int>> _subscription;
   final List<int> _buffer = <int>[];
   bool _isConnected = true;

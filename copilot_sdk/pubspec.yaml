@@ -9,11 +9,13 @@ environment:
 resolution: workspace
 
 dependencies:
-  mason_logger: ^0.2.0
+  mason_logger: ^0.3.3
   uuid: ^4.5.1
 
 dev_dependencies:
   build_runner: ^2.4.15
+  http: ^1.1.0
   schema2dart: ^1.0.0
   test: ^1.26.3
+  test_api: any
   very_good_analysis: ^10.0.0
