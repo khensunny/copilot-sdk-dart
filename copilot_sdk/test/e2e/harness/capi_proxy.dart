@@ -38,15 +38,10 @@ class CapiProxy {
       runInShell: true,
     );
 
-    final stdoutStream = _serverProcess!.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter());
-    
+    final stdoutStream = _serverProcess!.stdout.transform(utf8.decoder).transform(const LineSplitter());
+
     final errorBuffer = StringBuffer();
-    _serverProcess!.stderr
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen((line) => errorBuffer.writeln(line));
+    _serverProcess!.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen(errorBuffer.writeln);
 
     // Wait for "Listening: http://..." message with 10 second timeout
     // Skip npm output lines and wait for the actual server output
@@ -62,7 +57,7 @@ class CapiProxy {
       // Keep track of lines that don't match for error reporting
       line = event;
     }
-    
+
     if (_proxyUrl == null) {
       throw TimeoutException(
         'Proxy failed to start within 10 seconds. Last line: $line. Stderr: $errorBuffer',
@@ -72,14 +67,20 @@ class CapiProxy {
   }
 
   static String _findRepoRoot() {
+    // Walk up directory tree looking for copilot-sdk-ts repo structure
     var dir = Directory.current;
-    while (dir != null) {
+    while (true) {
       // Check for reference/copilot-sdk-ts/nodejs directory structure
       final nodejsDir = Directory('${dir.path}/reference/copilot-sdk-ts/nodejs');
       if (nodejsDir.existsSync()) {
         return '${dir.path}/reference/copilot-sdk-ts';
       }
-      dir = dir.parent;
+      final parent = dir.parent;
+      // Check if we've reached the root (parent path equals current path)
+      if (parent.path == dir.path) {
+        break;
+      }
+      dir = parent;
     }
     throw StateError(
       'Could not find copilot-sdk-ts repository root. '

@@ -496,12 +496,11 @@ class CopilotSession {
         arguments: request.additionalFields ?? {},
       );
       return await _permissionHandler!(request, invocation);
-    } on Exception {
-      return PermissionResult.denied(
-        PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
-      );
-    } on Error {
-      // Handle Error subclasses (like StateError) that aren't Exceptions
+      // Catch all errors (Exception, Error, etc.) to match TypeScript/C# behavior.
+      // TypeScript uses: catch (_error) { return denied... }
+      // C# uses: catch { return denied... }
+      // ignore: avoid_catches_without_on_clauses
+    } catch (_) {
       return PermissionResult.denied(
         PermissionResultKind.deniedNoApprovalRuleAndCouldNotRequestFromUser,
       );

@@ -8,6 +8,13 @@ import 'package:test/test.dart';
 
 import 'harness/sdk_test_context.dart';
 
+/// Checks if tests requiring authentication should run
+bool get _shouldRunAuthTests {
+  final isCI = io.Platform.environment['CI'] == 'true';
+  final hasHmacKey = io.Platform.environment['COPILOT_HMAC_KEY'] != null;
+  return isCI && hasHmacKey;
+}
+
 void main() {
   final contextFuture = createSdkTestContext();
   registerSdkTestContext(contextFuture);
@@ -51,7 +58,7 @@ void main() {
       );
 
       await session.destroy();
-    });
+    }, skip: !_shouldRunAuthTests);
 
     test('should deny permission when handler returns denied', () async {
       final session = await context.copilotClient.createSession(
