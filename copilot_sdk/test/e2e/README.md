@@ -1,6 +1,6 @@
 # E2E Tests for Copilot SDK
 
-Integration tests that mirror the TypeScript reference implementation tests in `reference/copilot-sdk-ts/test/`.
+Integration tests that mirror the TypeScript reference implementation tests in `reference/copilot-sdk-ts/test/` and `reference/copilot-sdk-ts/nodejs/e2e`.
 
 ## Overview
 
@@ -104,36 +104,9 @@ When adding a test that needs snapshots:
 
 ## Known Issues
 
-### Type Cast Errors - ✅ FIXED
-
-**Status**: Fixed via post-processing in `tool/generate_session_events.dart`
-
-The generated model code had type cast issues where it expected `double` but received `int` from JSON. This was caused by schema2dart generating `as double` casts for JSON Schema "number" types.
-
-**Fix Applied**: Post-processing script now converts:
-```dart
-// Before:
-final inputTokens = json['inputTokens'] as double?;  // ❌ Failed at runtime
-
-// After:
-final inputTokens = (json['inputTokens'] as num?)?.toDouble();  // ✅ Works
-```
-
-### Other Post-Processing Fixes
-
-The generation script also handles:
-1. **Reserved class names**: Renames `class Function` to `class Function$` (Dart reserved word)
-2. **Import ordering**: Ensures `dart:` imports come before `package:` imports
-
 ### Permission Handler Error
 
 `permissions_test.dart` has a "Bad state: Handler error" - this is a logic issue in the permission handler implementation, not a type generation issue.
-
-## Model Selection
-
-The tests use recorded snapshots and don't call AI models during runs. Model selection is irrelevant for testing - the snapshots contain pre-recorded responses.
-
-To update snapshots with different models, modify the TypeScript test configuration and regenerate.
 
 ## Debugging
 

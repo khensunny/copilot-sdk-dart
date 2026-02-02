@@ -112,7 +112,10 @@ class JsonRpcClient {
             sendResponse(id, result);
           } on JsonRpcException catch (e) {
             sendErrorResponse(id, e.error);
-          } on Exception catch (e) {
+            // Must catch all thrown values (Exception, Error, etc.) to ensure
+            // the RPC response is always sent and the CLI doesn't hang
+            // ignore: avoid_catches_without_on_clauses
+          } catch (e) {
             sendErrorResponse(
               id,
               JsonRpcError(

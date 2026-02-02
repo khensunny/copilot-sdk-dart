@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -26,29 +27,64 @@ class CapiProxy {
   Process? _serverProcess;
 
   Future<String> start() async {
-    final harnessPath = Directory.current.parent.uri
-        .resolve('reference/copilot-sdk-ts/test/harness/server.ts')
-        .toFilePath();
-
-    final nodejsDir = Directory.current.parent.uri.resolve('reference/copilot-sdk-ts/nodejs/').toFilePath();
+    // Find the copilot-sdk-ts repository root
+    final repoRoot = _findRepoRoot();
+    final harnessDir = Directory('$repoRoot/test/harness');
 
     _serverProcess = await Process.start(
-      'npx',
-      ['tsx', harnessPath],
-      workingDirectory: nodejsDir,
+      'npm',
+      ['run', 'start'],
+      workingDirectory: harnessDir.path,
       runInShell: true,
     );
 
-    final line = await _serverProcess!.stdout
+    final stdoutStream = _serverProcess!.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter());
+    
+    final errorBuffer = StringBuffer();
+    _serverProcess!.stderr
         .transform(utf8.decoder)
         .transform(const LineSplitter())
-        .firstWhere((event) => event.trim().isNotEmpty);
-    final match = RegExp(r'Listening: (http://[^\s]+)').firstMatch(line);
-    if (match == null) {
-      throw StateError('Unable to parse proxy URL from: $line');
+        .listen((line) => errorBuffer.writeln(line));
+
+    // Wait for "Listening: http://..." message with 10 second timeout
+    // Skip npm output lines and wait for the actual server output
+    final listeningPattern = RegExp(r'Listening: (http://[^\s]+)');
+    String? line;
+    await for (final event in stdoutStream.timeout(const Duration(seconds: 10))) {
+      if (event.trim().isEmpty) continue;
+      final match = listeningPattern.firstMatch(event);
+      if (match != null) {
+        _proxyUrl = match.group(1);
+        break;
+      }
+      // Keep track of lines that don't match for error reporting
+      line = event;
     }
-    _proxyUrl = match.group(1);
+    
+    if (_proxyUrl == null) {
+      throw TimeoutException(
+        'Proxy failed to start within 10 seconds. Last line: $line. Stderr: $errorBuffer',
+      );
+    }
     return _proxyUrl!;
+  }
+
+  static String _findRepoRoot() {
+    var dir = Directory.current;
+    while (dir != null) {
+      // Check for reference/copilot-sdk-ts/nodejs directory structure
+      final nodejsDir = Directory('${dir.path}/reference/copilot-sdk-ts/nodejs');
+      if (nodejsDir.existsSync()) {
+        return '${dir.path}/reference/copilot-sdk-ts';
+      }
+      dir = dir.parent;
+    }
+    throw StateError(
+      'Could not find copilot-sdk-ts repository root. '
+      'Looking for reference/copilot-sdk-ts/nodejs directory.',
+    );
   }
 
   Future<void> updateConfig({

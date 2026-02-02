@@ -143,13 +143,13 @@ void main() {
 
                 final results = [
                   {
-                    'countryId': 19,
                     'cityName': 'Passos',
+                    'countryId': 19,
                     'population': 135460,
                   },
                   {
-                    'countryId': 12,
                     'cityName': 'San Lorenzo',
+                    'countryId': 12,
                     'population': 204356,
                   },
                 ];

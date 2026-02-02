@@ -477,7 +477,9 @@ class CopilotClient {
       final normalized = _normalizeToolResult(result);
       // Wrap in { result: ... } as expected by CLI
       return {'result': normalized};
-    } on Exception catch (e) {
+      // Must catch both Exception and Error (e.g., StateError) to match TypeScript's catch block
+      // ignore: avoid_catches_without_on_clauses
+    } catch (e) {
       return {
         'result': _normalizeToolResult(
           ToolResult.failure(
