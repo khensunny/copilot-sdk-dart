@@ -14,6 +14,7 @@
 // ignore_for_file: avoid_print, dangling_library_doc_comments
 
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:copilot_sdk/copilot_sdk.dart';
 
@@ -64,10 +65,9 @@ Future<void> main() async {
 
     // Listen to all events
     session.onAny((event) {
-      print(
-        '📢 Event [${event.runtimeType}]: '
-        '${_eventToString(event)}',
-      );
+      final eventType = _getEventType(event);
+      final eventData = _eventToString(event);
+      print('📢 Event [$eventType]: $eventData');
     });
 
     // Example 1: Simple math question
@@ -97,22 +97,98 @@ Future<void> main() async {
   }
 }
 
-/// Convert a SessionEvent to a readable string
+/// Convert a SessionEvent to a verbose JSON string (like TypeScript SDK)
 String _eventToString(SessionEvent event) {
-  switch (event) {
-    case AssistantMessage(:final data):
-      return 'content="${data.content.length} chars"';
-    case AssistantMessageDelta(:final data):
-      return 'delta="${data.deltaContent.length} chars"';
-    case AssistantTurnStart():
-      return 'turn started';
-    case AssistantTurnEnd():
-      return 'turn ended';
-    case SessionIdle():
-      return 'session idle';
-    case SessionError(:final data):
-      return 'error="${data.message}"';
-    default:
-      return event.runtimeType.toString();
-  }
+  final jsonData = _extractEventData(event);
+  const encoder = JsonEncoder.withIndent('  ');
+  return encoder.convert(jsonData);
+}
+
+/// Extract the data payload from an event (similar to event.data in TypeScript)
+Map<String, dynamic> _extractEventData(SessionEvent event) {
+  // Events have their data in a `data` field - access via pattern matching
+  return switch (event) {
+    SessionStart(:final data) => data.toJson(),
+    SessionResume(:final data) => data.toJson(),
+    SessionError(:final data) => data.toJson(),
+    SessionIdle(:final data) => data.toJson(),
+    SessionInfo(:final data) => data.toJson(),
+    SessionModelChange(:final data) => data.toJson(),
+    SessionImportLegacy(:final data) => data.toJson(),
+    SessionHandoff(:final data) => data.toJson(),
+    SessionTruncation(:final data) => data.toJson(),
+    SessionSnapshotRewind(:final data) => data.toJson(),
+    SessionUsageInfo(:final data) => data.toJson(),
+    SessionCompactionStart(:final data) => data.toJson(),
+    SessionCompactionComplete(:final data) => data.toJson(),
+    UserMessage(:final data) => data.toJson(),
+    PendingMessagesModified(:final data) => data.toJson(),
+    AssistantTurnStart(:final data) => data.toJson(),
+    AssistantIntent(:final data) => data.toJson(),
+    AssistantReasoning(:final data) => data.toJson(),
+    AssistantReasoningDelta(:final data) => data.toJson(),
+    AssistantMessage(:final data) => data.toJson(),
+    AssistantMessageDelta(:final data) => data.toJson(),
+    AssistantTurnEnd(:final data) => data.toJson(),
+    AssistantUsage(:final data) => data.toJson(),
+    Abort(:final data) => data.toJson(),
+    ToolUserRequested(:final data) => data.toJson(),
+    ToolExecutionStart(:final data) => data.toJson(),
+    ToolExecutionPartialResult(:final data) => data.toJson(),
+    ToolExecutionProgress(:final data) => data.toJson(),
+    ToolExecutionComplete(:final data) => data.toJson(),
+    SkillInvoked(:final data) => data.toJson(),
+    SubagentStarted(:final data) => data.toJson(),
+    SubagentCompleted(:final data) => data.toJson(),
+    SubagentFailed(:final data) => data.toJson(),
+    SubagentSelected(:final data) => data.toJson(),
+    HookStart(:final data) => data.toJson(),
+    HookEnd(:final data) => data.toJson(),
+    SystemMessage(:final data) => data.toJson(),
+    _ => {'type': event.runtimeType.toString()},
+  };
+}
+
+/// Get the event type string (e.g., "assistant.message", "session.idle")
+String _getEventType(SessionEvent event) {
+  return switch (event) {
+    SessionStart() => 'session.start',
+    SessionResume() => 'session.resume',
+    SessionError() => 'session.error',
+    SessionIdle() => 'session.idle',
+    SessionInfo() => 'session.info',
+    SessionModelChange() => 'session.model_change',
+    SessionImportLegacy() => 'session.import_legacy',
+    SessionHandoff() => 'session.handoff',
+    SessionTruncation() => 'session.truncation',
+    SessionSnapshotRewind() => 'session.snapshot_rewind',
+    SessionUsageInfo() => 'session.usage_info',
+    SessionCompactionStart() => 'session.compaction_start',
+    SessionCompactionComplete() => 'session.compaction_complete',
+    UserMessage() => 'user.message',
+    PendingMessagesModified() => 'pending_messages.modified',
+    AssistantTurnStart() => 'assistant.turn_start',
+    AssistantIntent() => 'assistant.intent',
+    AssistantReasoning() => 'assistant.reasoning',
+    AssistantReasoningDelta() => 'assistant.reasoning_delta',
+    AssistantMessage() => 'assistant.message',
+    AssistantMessageDelta() => 'assistant.message_delta',
+    AssistantTurnEnd() => 'assistant.turn_end',
+    AssistantUsage() => 'assistant.usage',
+    Abort() => 'abort',
+    ToolUserRequested() => 'tool.user_requested',
+    ToolExecutionStart() => 'tool.execution_start',
+    ToolExecutionPartialResult() => 'tool.execution_partial_result',
+    ToolExecutionProgress() => 'tool.execution_progress',
+    ToolExecutionComplete() => 'tool.execution_complete',
+    SkillInvoked() => 'skill.invoked',
+    SubagentStarted() => 'subagent.started',
+    SubagentCompleted() => 'subagent.completed',
+    SubagentFailed() => 'subagent.failed',
+    SubagentSelected() => 'subagent.selected',
+    HookStart() => 'hook.start',
+    HookEnd() => 'hook.end',
+    SystemMessage() => 'system.message',
+    _ => event.runtimeType.toString(),
+  };
 }
